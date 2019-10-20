@@ -7,10 +7,29 @@ First you need TensorFlow backend installed. `img2vec_keras` uses the `keras` mo
 ```pip install git+git://github.com/jaredwinick/img2vec-keras.git```
 
 # Usage
+
 ```python
 from img2vec_keras import Img2Vec
+from PIL import Image
+
 img2vec = Img2Vec()
 x = img2vec.get_vec('/path/to/image/dog1.jpg')
+
+dog = Image.open('path/to/image/dog1.jpg')
+x = Img2vec(img=dog)
+```
+
+Alternatively if you have already a pipeline in place to extract images into
+`nd.array` type you can use the sklearn-style `.transform()` method.
+```python
+from PIL import Image
+
+img_files = ["/path/to/image/dog1.jpg", "/path/to/image/dog2.jpg"]
+dogs = [Image.open(f) for f in img_files]
+dogs_array = [np.expand_dims(image.img_to_array(v.resize((224, 224)).convert("RGB")), 0)
+              for v in dogs]
+img2vec = Img2Vec()
+img2vec.transform(dogs_array)
 ```
 
 # Examples

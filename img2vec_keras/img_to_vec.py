@@ -41,7 +41,7 @@ class Img2Vec(object):
                 # Convert it to 3-channel image.
                 img = img.convert("RGB")
 
-        return self.transform(image.img_to_array(img))
+        return self.transform(np.expand_dims(image.img_to_array(img), axis=0))
     
     def transform(self, X: np.ndarray) -> np.ndarray:
         """ Gets a vector embedding from an image array.
@@ -49,14 +49,19 @@ class Img2Vec(object):
         The .transform() method follows sklearn-style and can therefore be used
         in sklearn Pipeline.
         
-        :param X: image encoded as numpy array.
+        :param X: images encoded as a 4D numpy array, with axis=0 being the
+          dimension enumerating different images, and the remaining dimensions
+          encoding (224, 224, 3), where (224, 224) are the width/height of
+          array (must be 224,224) and 3 are the 3 RGB channels.
 
         :returns: The embedding of the image as numpy ndarray
         """
+        n_images = X.shape[0]
         intermediate_output = self.intermediate_layer_model.predict(
-            resnet50.preprocess_input(np.expand_dims(X, axis=0)))
+            resnet50.preprocess_input(X))
         
-        return intermediate_output[0]
+        embeddings = intermediate_output[0]
+        return embeddings.reshape((n_images, int(len(embeddings) / n_images)))
 
 
 if __name__ == "main":
